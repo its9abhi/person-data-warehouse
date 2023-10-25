@@ -21,3 +21,6 @@ Google Cloud Platform
 Data Pipeine Tool - Apache Airflow
 
 ## Data Model
+
+## Data Model
+<img src="Employee.jpg">
