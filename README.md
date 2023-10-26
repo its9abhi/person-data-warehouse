@@ -7,7 +7,7 @@ The goal of this project is to create a data warehouse of a MNC Employee data us
 for analysis 
 
 ## Architecture 
-
+<img src = "Employee - Arch.jpg">
 
 ## Technology Used
 - Programming Language - Python
@@ -19,8 +19,6 @@ Google Cloud Platform
 4. Looker Studio
 
 Data Pipeine Tool - Apache Airflow
-
-## Data Model
 
 ## Data Model
 <img src="Employee.jpg">
