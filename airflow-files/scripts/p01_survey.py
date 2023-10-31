@@ -18,28 +18,29 @@ def transform_survey_data(emp_survey, manager_survey, general_data):
     emp_survey = emp_survey.fillna(0)
     manager_survey = manager_survey.fillna(0)
     rating_mapping = {
+        0: 'N/A',
         1: 'Low',
         2: 'Medium',
         3: 'High',
         4: 'Very High'
     }
     emp_survey_table = emp_survey[["EnvironmentSatisfaction","JobSatisfaction","WorkLifeBalance"]].drop_duplicates().reset_index(drop=True).reset_index().rename(columns = {"index":"SurveyId"})
-    emp_survey_table = pd.merge(emp_survey_table,emp_survey,on = ["EnvironmentSatisfaction","JobSatisfaction","WorkLifeBalance"])
-    general_data = pd.merge(general_data,emp_survey_table,on = "EmployeeID").drop(columns =["EnvironmentSatisfaction","JobSatisfaction","WorkLifeBalance"])
+    df = pd.merge(emp_survey_table,emp_survey,on = ["EnvironmentSatisfaction","JobSatisfaction","WorkLifeBalance"])
+    general_data = pd.merge(general_data,df,on = "EmployeeID").drop(columns =["EnvironmentSatisfaction","JobSatisfaction","WorkLifeBalance"])
     manger_survey_table = manager_survey[['JobInvolvement', 'PerformanceRating']].drop_duplicates().reset_index(drop=True).reset_index().rename(columns = {"index":"SurveyId"})
-    manger_survey_table = pd.merge(manger_survey_table,manager_survey,on = ['JobInvolvement', 'PerformanceRating'])
-    general_data = pd.merge(general_data,manger_survey_table,on = "EmployeeID").drop(columns =['JobInvolvement', 'PerformanceRating']).rename(columns = {"SurveyId_x":"EmployeeSurveyId","SurveyId_y" : "ManagerSurveyId"})
+    df = pd.merge(manger_survey_table,manager_survey,on = ['JobInvolvement', 'PerformanceRating'])
+    general_data = pd.merge(general_data,df,on = "EmployeeID").drop(columns =['JobInvolvement', 'PerformanceRating']).rename(columns = {"SurveyId_x":"EmployeeSurveyId","SurveyId_y" : "ManagerSurveyId"})
     emp_survey_columns= ["EnvironmentSatisfaction","JobSatisfaction","WorkLifeBalance"]
     manager_survey_columns = ["JobInvolvement","PerformanceRating"]
-    emp_survey[emp_survey_columns] = emp_survey[emp_survey_columns].astype(int)
-    manager_survey[manager_survey_columns] = manager_survey[manager_survey_columns].astype(int)
-    emp_survey["EnvironmentSatisfaction"] = emp_survey["EnvironmentSatisfaction"].map(rating_mapping)
-    emp_survey["JobSatisfaction"] = emp_survey["JobSatisfaction"].map(rating_mapping)
-    emp_survey["WorkLifeBalance"] = emp_survey["WorkLifeBalance"].map(rating_mapping)
-    manager_survey["JobInvolvement"] = manager_survey["JobInvolvement"].map(rating_mapping)
-    manager_survey["PerformanceRating"] = manager_survey["PerformanceRating"].map(rating_mapping)
+    emp_survey_table[emp_survey_columns] = emp_survey_table[emp_survey_columns].astype(int)
+    manger_survey_table[manager_survey_columns] = manger_survey_table[manager_survey_columns].astype(int)
+    emp_survey_table["EnvironmentSatisfaction"] = emp_survey_table["EnvironmentSatisfaction"].map(rating_mapping)
+    emp_survey_table["JobSatisfaction"] = emp_survey_table["JobSatisfaction"].map(rating_mapping)
+    emp_survey_table["WorkLifeBalance"] = emp_survey_table["WorkLifeBalance"].map(rating_mapping)
+    manger_survey_table["JobInvolvement"] = manger_survey_table["JobInvolvement"].map(rating_mapping)
+    manger_survey_table["PerformanceRating"] = manger_survey_table["PerformanceRating"].map(rating_mapping)
 
-    return emp_survey, manager_survey, general_data
+    return emp_survey_table, manger_survey_table, general_data
 
 def load_data_to_gcs(bucket, file_name, data, content_type="text/csv"):
     blob = bucket.blob(file_name)
@@ -59,14 +60,14 @@ def survey_etl():
     emp_survey, manager_survey, general_data = transform_survey_data(emp_survey, manager_survey, general_data)
 
     # Loading to GCS
-    load_data_to_gcs(bucket, "EmployeeSurvey.csv", emp_survey.to_csv(index=False))
-    load_data_to_gcs(bucket, "ManagerSurvey.csv", manager_survey.to_csv(index=False))
+    load_data_to_gcs(bucket, "EmployeeSurveyData.csv", emp_survey.to_csv(index=False))
+    load_data_to_gcs(bucket, "ManagerSurveyData.csv", manager_survey.to_csv(index=False))
     load_data_to_gcs(bucket, "EmployeeStage.csv", general_data.to_csv(index=False))
 
     # Loading to BigQuery
     dataset_id = "PersonDataWarehouse"
-    load_data_to_bigquery(dataset_id, "EmployeeSurvey", emp_survey)
-    load_data_to_bigquery(dataset_id, "ManagerSurvey", manager_survey)
+    load_data_to_bigquery(dataset_id, "EmployeeSurveyData", emp_survey)
+    load_data_to_bigquery(dataset_id, "ManagerSurveyData", manager_survey)
 
 if __name__ == "__main__":
     survey_etl()
