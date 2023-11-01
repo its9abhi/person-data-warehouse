@@ -7,7 +7,7 @@ import pandas_gbq
 def load_data_to_bigquery(dataset_id, table_id, data):
     client = bigquery.Client()
     table_ref = f"{dataset_id}.{table_id}"
-    pandas_gbq.to_gbq(data, destination_table=table_ref)
+    pandas_gbq.to_gbq(data, destination_table=table_ref,if_exists='replace')
 
 def extract_data_from_gcs(bucket, file_name):
     blob = bucket.get_blob(file_name)
