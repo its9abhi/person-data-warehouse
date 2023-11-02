@@ -22,13 +22,3 @@ Data Pipeine Tool - Apache Airflow
 
 ## Data Model
 <img src="Employee.jpg">
-
-##Project Structure:
-my_airflow_project/
-├── dags/
-│   ├── person-data-warehouse-dag.py
-├── scripts/
-│   ├── p01_department.py
-│   ├── p01_survey.py
-│   ├── p02_employee_personal_data.py
-│   ├── p03_employee_data.py
